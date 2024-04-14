@@ -17,6 +17,7 @@ NEWS = (
     ('https://www.theverge.com/', 'theverge'),
     ('https://www.technologyreview.com/', 'technologyreview'),
     ('https://www.techradar.com/', 'techradar'),
+    ('https://www.jiemian.com/', 'jiemian'),
 )
 
 # driver = webdriver.Chrome()
