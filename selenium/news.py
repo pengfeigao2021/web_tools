@@ -1,4 +1,5 @@
 import pdb
+import re
 import glob
 import pandas as pd
 from selenium import webdriver
@@ -20,6 +21,10 @@ NEWS = (
     ('https://www.jiemian.com/', 'jiemian'),
 )
 
+def has_chinese(text):
+    res = re.findall(r'[\u4e00-\u9fff]+', text)
+    return res is not None and len(res) > 0
+
 # driver = webdriver.Chrome()
 driver = webdriver.Firefox()
 # get current date in "YYYY-MM-DD" format
@@ -35,6 +40,13 @@ for url, n in NEWS:
     exceptions = []
     for div in divs:
         try:
+            # filter chinese
+            if (div.text is not None 
+                and len(div.text) >= 5
+                and has_chinese(div.text)):
+                doc_urls.append(div.get_attribute("href"))
+                doc_url_titles.append(div.text)
+                continue
             # filter short div.text 
             if div.text is None or len(div.text.split(' ')) <= 3:
                 continue

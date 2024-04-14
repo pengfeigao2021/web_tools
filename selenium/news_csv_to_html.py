@@ -115,7 +115,7 @@ def csv2html(files, html_path):
         fout.write(content)
     
 def main():
-    csvs = glob.glob(f'{DATA_DIR}/*.csv')
+    csvs = glob.glob(f'{DATA_DIR}/*04-14*.csv')
     html_path = f'{DATA_DIR}/news.html'
     csv2html(csvs, html_path)
     print('done')
