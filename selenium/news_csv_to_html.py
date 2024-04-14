@@ -53,13 +53,30 @@ def csv2html(files, html_path):
             urls.append(url)
         
         list_content = '''
-        <ol>
-        {}
-        </ol>
+        <table class="pure-table pure-table-horizontal">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>news</th>
+                <th>Click</th>
+                <th>Views</th>
+                <th>Likes</th>
+            </tr>
+        </thead>
+        <tbody>
+          {}
+        </tbody>
+        </table>
         '''.format(
             '\n'.join(
-                f'<li><a href={url}>{title}</a></li>' for 
-                title, url in zip(titles, urls)))
+                f'''<tr>
+                      <td>{id}</td>
+                      <td><a href={vals[1]}>{vals[0]}</a></td>
+                      <td>0</td>
+                      <td>0</td>
+                      <td>0</td>
+                    </tr>''' for 
+                id, vals in enumerate(zip(titles, urls))))
 
         news_content = f'''
         <h2 id="{name}">{name}</h2>
@@ -73,12 +90,19 @@ def csv2html(files, html_path):
     content = '''
     <html>
     <head>
-    <title>News</title>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/purecss@3.0.0/build/pure-min.css" integrity="sha384-X38yfunGUhNzHpBaEBsWLO+A0HDYOQi8ufWDkZ0k9e0eXz/tH3II7uKZ9msv++Ls" crossorigin="anonymous">
+        <link rel="stylesheet" href="styles.css">
+        <title>News</title>
     </head>
     <body>
-    {}
-    <br>
-    {}
+        <div class="pure-g">
+            <div class="pure-u-1-3 g1"><p>Tech News</p></div>
+            <div class="pure-u-1-3 g2"><p>Updated: 2024-04-13</p></div>
+            <div class="pure-u-1-3 g3"><p>Views: 0</p></div>
+        </div>
+        {}
+        <br>
+        {}
     </body>
     </html>
     '''.format(
