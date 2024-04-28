@@ -1,8 +1,12 @@
 import pandas as pd
 import os
+import tqdm
+import sys
 import glob
 
 DATA_DIR = '/Users/AlexG/data/selenium'
+sys.path.insert(0, '/Users/AlexG/Documents/GitHub/web_tools/text2vec-base-multilingual')
+from cossim import CosineSim
 
 def isduplicate(urls, titles, title, url):
     for t in titles:
@@ -19,7 +23,33 @@ def isduplicate(urls, titles, title, url):
     return False
     
 
+def load_dislike(path='/Users/AlexG/Documents/GitHub/web_tools/recomend/data/dislike.csv'):
+    if os.stat(path).st_size == 0:
+        print('empty csv file')
+        return None
+    df = pd.read_csv(path)
+    return df
+    
+def dislike_sim(model, dislike_embs, s):
+    emb = model.get_emb(s)
+    score = None
+    for t, emb_t in dislike_embs.items():
+        sim = model.cosine(emb, emb_t)
+        if score is None or sim > score:
+            score = sim
+    return score
+    
 def csv2html(files, html_path):
+    df_dislike = load_dislike()
+    dislike_titles = set()
+    dislike_embs = dict()
+    if df_dislike is not None:
+        dislike_titles = set(df_dislike['title'])
+    sim = CosineSim()
+    for t in tqdm.tqdm(dislike_titles, total = len(dislike_titles)):
+        emb = sim.get_emb(t)
+        dislike_embs[t] = emb
+
     news = []
     source_list = []
     for p in files:
@@ -71,12 +101,18 @@ def csv2html(files, html_path):
             '\n'.join(
                 f'''<tr>
                       <td>{id}</td>
-                      <td><a href={vals[1]}>{vals[0]}</a></td>
+                      <td>
+                        <form action="http://127.0.0.1:5000/adddislike" method="POST" style="position: inline;">
+                            <a href={vals[1]}>{vals[0]}</a>
+                            <input style="visibility: hidden;" name="title" id="say" value="{vals[0]}" />
+                            <button>dislike this</button>
+                        </form>
+                      </td>
                       <td>0</td>
-                      <td>0</td>
-                      <td>0</td>
-                    </tr>''' for 
-                id, vals in enumerate(zip(titles, urls))))
+                      <td>{'-{:.3f}'.format(dislike_sim(sim, dislike_embs, vals[0]))}</td>
+                      <td>{'-1' if vals[0] in dislike_titles else '0'}</td>
+                    </tr>''' for
+                    id, vals in enumerate(zip(titles, urls))))
 
         news_content = f'''
         <h2 id="{name}">{name}</h2>
@@ -115,7 +151,7 @@ def csv2html(files, html_path):
         fout.write(content)
     
 def main():
-    csvs = glob.glob(f'{DATA_DIR}/*04-14*.csv')
+    csvs = glob.glob(f'{DATA_DIR}/*04-25*.csv')
     html_path = f'{DATA_DIR}/news.html'
     csv2html(csvs, html_path)
     print('done')
