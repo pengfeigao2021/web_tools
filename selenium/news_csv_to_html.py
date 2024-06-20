@@ -82,6 +82,20 @@ def csv2html(files, html_path):
             titles.append(title)
             urls.append(url)
         
+        # compute and sort by score
+        news_contents = []
+        for id, vals in enumerate(zip(titles, urls)):
+            title, url = vals
+            score = -dislike_sim(sim, dislike_embs, title)
+            news_contents.append(
+                (
+                    title,
+                    url,
+                    score
+                )
+            )
+        news_contents.sort(key=lambda x: x[2], reverse=True)
+
         list_content = '''
         <table class="pure-table pure-table-horizontal">
         <thead>
@@ -109,10 +123,10 @@ def csv2html(files, html_path):
                         </form>
                       </td>
                       <td>0</td>
-                      <td>{'-{:.3f}'.format(dislike_sim(sim, dislike_embs, vals[0]))}</td>
+                      <td>{'-{:.3f}'.format(vals[2])}</td>
                       <td>{'-1' if vals[0] in dislike_titles else '0'}</td>
                     </tr>''' for
-                    id, vals in enumerate(zip(titles, urls))))
+                    id, vals in enumerate(news_contents)))
 
         news_content = f'''
         <h2 id="{name}">{name}</h2>
